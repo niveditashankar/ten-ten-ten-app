@@ -2,7 +2,7 @@
 import streamlit as st
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="OPENAI_API_KEY")
 
 st.set_page_config(page_title="10-10-10 Decision Tool", layout="centered")
 

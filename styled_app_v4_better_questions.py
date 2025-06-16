@@ -1,11 +1,11 @@
-
 import streamlit as st
-from openai import OpenAI
+import openai
 
-client = OpenAI(api_key="OPENAI_API_KEY")
+# Initialize OpenAI client using secure secret key from Streamlit secrets
+client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+# Page styling
 st.set_page_config(page_title="10-10-10 Decision Tool", layout="centered")
-
 st.markdown("""
 <style>
     .main {
@@ -52,12 +52,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Session setup
 if "page" not in st.session_state:
     st.session_state["page"] = "decision"
 
+# Step 1: Decision
 if st.session_state["page"] == "decision":
     st.title("10-10-10 Decision Tool")
-    st.markdown("### 🧭 Step 1: What's the decision you're facing?")
+    st.markdown("### 🧡 Step 1: What's the decision you're facing?")
     st.markdown("<p class='small-note'>Think of a real choice you're weighing right now.</p>", unsafe_allow_html=True)
     decision = st.text_input("Your decision", placeholder="e.g., Should I take the job in a new city?")
     if decision:
@@ -65,6 +67,7 @@ if st.session_state["page"] == "decision":
         if st.button("Next →"):
             st.session_state["page"] = "values"
 
+# Step 2: Values
 if st.session_state["page"] == "values":
     st.markdown("### 🌿 Step 2: Know Your Values")
     st.markdown("<p class='small-note'>Pick exactly two for each category.</p>", unsafe_allow_html=True)
@@ -85,14 +88,13 @@ if st.session_state["page"] == "values":
         if st.button("Next → Reflection"):
             st.session_state["page"] = "reflection"
 
+# Step 3: Reflection
 if st.session_state["page"] == "reflection":
     st.markdown("### 🔮 Step 3: Reflect with 10-10-10")
     st.markdown("<p class='small-note'>How might this decision feel in the future? Think deeply. There’s no right or wrong here.</p>", unsafe_allow_html=True)
-
     ten_min = st.text_area("🕒 If you make this decision, how will it feel 10 minutes from now?")
-    ten_months = st.text_area("📆 If you make this decision, how might your life look 10 months from now?")
+    ten_months = st.text_area("🗓️ If you make this decision, how might your life look 10 months from now?")
     ten_years = st.text_area("🕰️ If you make this decision, how might it matter 10 years from now?")
-
     is_complete = all([ten_min.strip(), ten_months.strip(), ten_years.strip()])
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("✨ Generate Insight"):
@@ -106,9 +108,9 @@ if st.session_state["page"] == "reflection":
         else:
             st.warning("Please complete all three reflections before generating insight.")
 
+# Step 4: Summary
 if st.session_state["page"] == "summary":
     st.markdown("### 💡 Step 4: Insight Summary")
-
     prompt = f"""
     The user is making this decision: {st.session_state['decision']}
     They can't live without: {', '.join(st.session_state['values']['must_have'])}
@@ -122,7 +124,6 @@ if st.session_state["page"] == "summary":
 
     Provide a warm and motivating summary of how these reflections align with their values, and one concrete action they can take this week.
     """
-
     with st.spinner("Reflecting and writing your insight..."):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
